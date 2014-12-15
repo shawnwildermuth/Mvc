@@ -7,6 +7,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Framework.OptionsModel;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -45,6 +46,10 @@ namespace Microsoft.AspNet.Mvc
             options.OutputFormatters.Add(new JsonOutputFormatter());
             options.OutputFormatters.Add(
                 new XmlDataContractSerializerOutputFormatter(XmlOutputFormatter.GetDefaultXmlWriterSettings()));
+
+            // Set up default mapping for xml and json extensions to content type
+            options.AddFormatMapping("json", MediaTypeHeaderValue.Parse("application/json"));
+            options.AddFormatMapping("xml", MediaTypeHeaderValue.Parse("application/xml"));
 
             // Set up default input formatters.
             options.InputFormatters.Add(new JsonInputFormatter());

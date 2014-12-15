@@ -15,6 +15,7 @@ using MvcSample.Web.Services;
 #if ASPNET50
 using Autofac;
 using Microsoft.Framework.DependencyInjection.Autofac;
+using Microsoft.AspNet.Mvc.Core.Filters;
 #endif
 
 namespace MvcSample.Web
@@ -90,6 +91,7 @@ namespace MvcSample.Web
                     services.Configure<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
+                        options.Filters.Add(typeof(UrlExtensionFilter));
                     });
                 });
             }
@@ -97,6 +99,8 @@ namespace MvcSample.Web
             app.UseMvc(routes =>
             {
                 routes.MapRoute("areaRoute", "{area:exists}/{controller}/{action}");
+
+                routes.MapRoute("formatRoute", "{controller}/{action}/{format}");
 
                 routes.MapRoute(
                     "controllerActionRoute",
