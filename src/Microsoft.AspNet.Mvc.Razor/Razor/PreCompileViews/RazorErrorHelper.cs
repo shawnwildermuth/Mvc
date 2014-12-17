@@ -7,9 +7,9 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
-    public static class RazorErrorExtensions
+    public static class RazorErrorHelper
     {
-        public static Diagnostic ToDiagnostics([NotNull] this RazorError error, [NotNull] string filePath)
+        public static Diagnostic ToDiagnostics([NotNull] RazorError error, [NotNull] string filePath)
         {
             var descriptor = new DiagnosticDescriptor(id: "Razor",
                                                       title: "Razor parsing error",

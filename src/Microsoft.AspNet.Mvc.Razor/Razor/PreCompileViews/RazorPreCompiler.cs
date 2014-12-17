@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNet.FileSystems;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,23 +19,27 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IServiceProvider _serviceProvider;
         private readonly IFileSystem _fileSystem;
         private readonly IMvcRazorHost _host;
+        private readonly ICompilationCache _compilationCache;
 
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider) :
             this(designTimeServiceProvider,
                  designTimeServiceProvider.GetRequiredService<IMvcRazorHost>(),
-                 designTimeServiceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>())
+                 designTimeServiceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>(),
+                 designTimeServiceProvider.GetRequiredService<ICompilationCache>())
         {
         }
 
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider,
                                 [NotNull] IMvcRazorHost host,
-                                [NotNull] IOptions<RazorViewEngineOptions> optionsAccessor)
+                                [NotNull] IOptions<RazorViewEngineOptions> optionsAccessor,
+                                [NotNull] ICompilationCache compilationCache)
         {
             _serviceProvider = designTimeServiceProvider;
             _host = host;
 
             var appEnv = _serviceProvider.GetRequiredService<IApplicationEnvironment>();
             _fileSystem = optionsAccessor.Options.FileSystem;
+            _compilationCache = compilationCache;
         }
 
         protected virtual string FileExtension { get; } = ".cshtml";
@@ -60,15 +65,29 @@ namespace Microsoft.AspNet.Mvc.Razor
             var options = SyntaxTreeGenerator.GetParseOptions(context.CSharpCompilation);
             var list = new List<RazorFileInfo>();
 
-            foreach (var info in GetFileInfosRecursive(string.Empty))
+            foreach (var info in GetFileInfosRecursive(currentPath: string.Empty))
             {
-                var descriptor = ParseView(info,
-                                           context,
-                                           options);
-
-                if (descriptor != null)
+                var cachedValue = _compilationCache.Get(info.RelativePath, compilationContext =>
                 {
-                    list.Add(descriptor);
+                    compilationContext.Monitor(new FileWriteTimeCacheDependency(info.FileInfo.PhysicalPath));
+                    return ParseView(info, options);
+                });
+
+                var razorPrecompilationResult = cachedValue as RazorPreCompilationResult;
+                if (razorPrecompilationResult != null)
+                {
+                    if (razorPrecompilationResult.SyntaxTree != null)
+                    {
+                        context.CSharpCompilation = context.CSharpCompilation.AddSyntaxTrees(
+                                                                razorPrecompilationResult.SyntaxTree);
+                    }
+                    else if (razorPrecompilationResult.ParseErrors != null)
+                    {
+                        foreach (var diagnostic in razorPrecompilationResult.ParseErrors)
+                        {
+                            context.Diagnostics.Add(diagnostic);
+                        }
+                    }
                 }
             }
 
@@ -106,20 +125,23 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        protected virtual RazorFileInfo ParseView([NotNull] RelativeFileInfo fileInfo,
-                                                  [NotNull] IBeforeCompileContext context,
-                                                  [NotNull] CSharpParseOptions options)
+        protected virtual RazorPreCompilationResult ParseView([NotNull] RelativeFileInfo fileInfo,
+                                                              [NotNull] CSharpParseOptions options)
         {
+            var filePath = fileInfo.FileInfo.PhysicalPath;
             using (var stream = fileInfo.FileInfo.CreateReadStream())
             {
                 var results = _host.GenerateCode(fileInfo.RelativePath, stream);
 
-                foreach (var parserError in results.ParserErrors)
+                if (!results.Success)
                 {
-                    var diagnostic = parserError.ToDiagnostics(fileInfo.FileInfo.PhysicalPath);
-                    context.Diagnostics.Add(diagnostic);
-                }
+                    var diagnostics = results.ParserErrors
+                                         .Select(error => RazorErrorHelper.ToDiagnostics(error, filePath))
+                                         .ToList();
 
+                    return new RazorPreCompilationResult { ParseErrors = diagnostics };
+                }
+                
                 var generatedCode = results.GeneratedCode;
 
                 if (generatedCode != null)
@@ -129,18 +151,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     if (fullTypeName != null)
                     {
-                        context.CSharpCompilation = context.CSharpCompilation.AddSyntaxTrees(syntaxTree);
-
-                        var hash = RazorFileHash.GetHash(fileInfo.FileInfo);
-
-                        return new RazorFileInfo()
-                        {
-                            FullTypeName = fullTypeName,
-                            RelativePath = fileInfo.RelativePath,
-                            LastModified = fileInfo.FileInfo.LastModified,
-                            Length = fileInfo.FileInfo.Length,
-                            Hash = hash,
-                        };
+                        return new RazorPreCompilationResult { SyntaxTree = syntaxTree };
                     }
                 }
             }
