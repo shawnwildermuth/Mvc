@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IFileSystem _fileSystem;
         private readonly IMvcRazorHost _host;
         private readonly ICompilationCache _compilationCache;
+        private readonly IApplicationEnvironment _appEnv;
 
         public RazorPreCompiler([NotNull] IServiceProvider designTimeServiceProvider) :
             this(designTimeServiceProvider,
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _serviceProvider = designTimeServiceProvider;
             _host = host;
 
-            var appEnv = _serviceProvider.GetRequiredService<IApplicationEnvironment>();
+            _appEnv = _serviceProvider.GetRequiredService<IApplicationEnvironment>();
             _fileSystem = optionsAccessor.Options.FileSystem;
             _compilationCache = compilationCache;
         }
@@ -67,7 +68,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             foreach (var info in GetFileInfosRecursive(currentPath: string.Empty))
             {
-                var cachedValue = _compilationCache.Get(info.RelativePath, compilationContext =>
+                var key = Tuple.Create(
+                    nameof(RazorPreCompiler),
+                    info.RelativePath,
+                    _appEnv.RuntimeFramework,
+                    _appEnv.Version);
+
+                var cachedValue = _compilationCache.Get(key, compilationContext =>
                 {
                     compilationContext.Monitor(new FileWriteTimeCacheDependency(info.FileInfo.PhysicalPath));
                     return ParseView(info, options);

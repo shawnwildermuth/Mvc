@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Hosting;
@@ -18,6 +20,7 @@ namespace Microsoft.AspNet.Mvc
 {
     public abstract class RazorPreCompileModule : ICompileModule
     {
+        private string _file;
         private readonly IServiceProvider _appServices;
 
         public RazorPreCompileModule(IServiceProvider services)
@@ -31,14 +34,29 @@ namespace Microsoft.AspNet.Mvc
         {
             var appEnv = _appServices.GetRequiredService<IApplicationEnvironment>();
 
+            _file = Path.Combine(@"d:\temp\RazorPreCompile");
+            Directory.CreateDirectory(_file);
+            _file = Path.Combine(_file, appEnv.ApplicationName + ".txt");
             var setup = new RazorViewEngineOptionsSetup(appEnv);
             var sc = new ServiceCollection();
             sc.ConfigureOptions(setup);
             sc.AddMvc();
 
+            var sw = Stopwatch.StartNew();
+            Log("[" + appEnv.RuntimeFramework + "]: Before RazorPreCompiler", sw);
+            var cache = _appServices.GetRequiredService<ICompilationCache>();
+            Log("[" + cache.GetHashCode() + "]", sw);
             var viewCompiler = new RazorPreCompiler(BuildFallbackServiceProvider(sc, _appServices));
             viewCompiler.CompileViews(context);
+            Log("[" + appEnv.RuntimeFramework + "]: After RazorPreCompiler", sw);
+            File.AppendAllText(_file, Environment.NewLine + Environment.NewLine);
         }
+
+        private void Log(string v, Stopwatch sw)
+        {
+            File.AppendAllText(_file, sw.Elapsed.TotalMilliseconds + " " + v + Environment.NewLine);
+        }
+
 
         public void AfterCompile(IAfterCompileContext context)
         {

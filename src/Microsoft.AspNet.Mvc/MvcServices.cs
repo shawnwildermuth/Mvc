@@ -18,6 +18,7 @@ using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.NestedProviders;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -114,7 +115,8 @@ namespace Microsoft.AspNet.Mvc
             yield return describe.Transient<IMvcRazorHost>(serviceProvider =>
             {
                 var cachedFileSystem = serviceProvider.GetRequiredService<IRazorFileSystemCache>();
-                return new MvcRazorHost(cachedFileSystem);
+                var assemblyLoadContext = serviceProvider.GetRequiredService<IAssemblyLoadContextFactory>();
+                return new MvcRazorHost(cachedFileSystem, assemblyLoadContext.Create());
             });
 
             // Caches compilation artifacts across the lifetime of the application.

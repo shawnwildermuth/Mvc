@@ -10,6 +10,7 @@ using Microsoft.AspNet.Razor.Generator;
 using Microsoft.AspNet.Razor.Generator.Compiler;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.Runtime;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -38,28 +39,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly string _baseType;
         private ChunkInheritanceUtility _chunkInheritanceUtility;
 
-#if NET45
-        /// <summary>
-        /// Initializes a new instance of <see cref="MvcRazorHost"/> with the specified
-        /// <param name="root"/>.
-        /// </summary>
-        /// <param name="root">The path to the application base.</param>
-        public MvcRazorHost(string root) :
-            this(new PhysicalFileSystem(root))
-        {
-        }
-#endif
         /// <summary>
         /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="fileSystem"/>.
         /// </summary>
         /// <param name="fileSystem">A <see cref="IFileSystem"/> rooted at the application base path.</param>
-        public MvcRazorHost(IFileSystem fileSystem)
+        public MvcRazorHost(IFileSystem fileSystem, IAssemblyLoadContext loadContext)
             : base(new CSharpRazorCodeLanguage())
         {
             _fileSystem = fileSystem;
             _baseType = BaseType;
 
-            TagHelperDescriptorResolver = new TagHelperDescriptorResolver();
+            TagHelperDescriptorResolver = new TagHelperDescriptorResolver(new TagHelperTypeResolver(loadContext));
             DefaultBaseClass = BaseType + '<' + DefaultModel + '>';
             DefaultNamespace = "Asp";
             // Enable instrumentation by default to allow precompiled views to work with BrowserLink.
