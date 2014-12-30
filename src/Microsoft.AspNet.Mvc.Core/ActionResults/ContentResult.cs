@@ -24,6 +24,11 @@ namespace Microsoft.AspNet.Mvc
                 response.ContentType = ContentType;
             }
 
+            if (ContentEncoding != null)
+            {
+                response.Headers["Content-Encoding"] = ContentEncoding.EncodingName;
+            }
+
             if (Content != null)
             {
                 await response.WriteAsync(Content);
