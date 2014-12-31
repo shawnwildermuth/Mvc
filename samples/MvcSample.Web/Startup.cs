@@ -11,11 +11,11 @@ using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;
+using Microsoft.AspNet.Mvc.Core.Filters;
 
 #if ASPNET50
 using Autofac;
 using Microsoft.Framework.DependencyInjection.Autofac;
-using Microsoft.AspNet.Mvc.Core.Filters;
 #endif
 
 namespace MvcSample.Web
@@ -51,6 +51,8 @@ namespace MvcSample.Web
                     services.Configure<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
+                        var formatFilter = new FormatFilter();
+                        options.Filters.Add(formatFilter);
                     });
                     services.Configure<RazorViewEngineOptions>(options =>
                     {
@@ -91,7 +93,9 @@ namespace MvcSample.Web
                     services.Configure<MvcOptions>(options =>
                     {
                         options.Filters.Add(typeof(PassThroughAttribute), order: 17);
-                        options.Filters.Add(typeof(UrlExtensionFilter));
+
+                        var formatFilter = new FormatFilter();
+                        options.Filters.Add(formatFilter);
                     });
                 });
             }
