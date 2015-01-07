@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IActionSelectorDecisionTreeProvider _decisionTreeProvider;
         private readonly INestedProviderManager<ActionConstraintProviderContext> _actionConstraintProvider;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public DefaultActionSelector(
             [NotNull] IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc
 
         public Task<ActionDescriptor> SelectAsync([NotNull] RouteContext context)
         {
-            using (_logger.BeginScope("DefaultActionSelector.SelectAsync"))
+            using (_logger.BeginScope(nameof(DefaultActionSelector) + ".SelectAsync"))
             {
                 var tree = _decisionTreeProvider.DecisionTree;
                 var matchingRouteConstraints = tree.Select(context.RouteData.Values);
@@ -68,9 +68,9 @@ namespace Microsoft.AspNet.Mvc
                     {
                         _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
                         {
-                            ActionsMatchingRouteConstraints = matchingRouteConstraints,
-                            ActionsMatchingActionConstraints = matchingActions,
-                            FinalMatches = finalMatches,
+                            ActionsMatchingRouteConstraints = matchingRouteConstraints.Select(actionDesc => new ActionDescriptorValues(actionDesc)).ToList(),
+                            ActionsMatchingActionConstraints = matchingActions.Select(actionDesc => new ActionDescriptorValues(actionDesc)).ToList(),
+                            FinalMatches = finalMatches.Select(actionDesc => new ActionDescriptorValues(actionDesc)).ToList()
                         });
                     }
 
@@ -84,10 +84,10 @@ namespace Microsoft.AspNet.Mvc
                     {
                         _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
                         {
-                            ActionsMatchingRouteConstraints = matchingRouteConstraints,
-                            ActionsMatchingActionConstraints = matchingActions,
-                            FinalMatches = finalMatches,
-                            SelectedAction = selectedAction
+                            ActionsMatchingRouteConstraints = matchingRouteConstraints.Select(actionDesc => new ActionDescriptorValues(actionDesc)).ToList(),
+                            ActionsMatchingActionConstraints = matchingActions.Select(actionDesc => new ActionDescriptorValues(actionDesc)).ToList(),
+                            FinalMatches = finalMatches.Select(actionDesc => new ActionDescriptorValues(actionDesc)).ToList(),
+                            SelectedAction = new ActionDescriptorValues(selectedAction)
                         });
                     }
 
@@ -99,9 +99,9 @@ namespace Microsoft.AspNet.Mvc
                     {
                         _logger.WriteValues(new DefaultActionSelectorSelectAsyncValues()
                         {
-                            ActionsMatchingRouteConstraints = matchingRouteConstraints,
-                            ActionsMatchingActionConstraints = matchingActions,
-                            FinalMatches = finalMatches,
+                            ActionsMatchingRouteConstraints = matchingRouteConstraints.Select(actionDesc => new ActionDescriptorValues(actionDesc)).ToList(),
+                            ActionsMatchingActionConstraints = matchingActions.Select(actionDesc => new ActionDescriptorValues(actionDesc)).ToList(),
+                            FinalMatches = finalMatches.Select(actionDesc => new ActionDescriptorValues(actionDesc)).ToList(),
                         });
                     }
 

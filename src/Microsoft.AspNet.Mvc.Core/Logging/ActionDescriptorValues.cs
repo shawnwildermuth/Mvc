@@ -19,11 +19,11 @@ namespace Microsoft.AspNet.Mvc.Logging
         {
             Name = inner.Name;
             DisplayName = inner.DisplayName;
-            Parameters = inner.Parameters.Select(p => new ParameterDescriptorValues(p)).ToList();
-            FilterDescriptors = inner.FilterDescriptors.Select(f => new FilterDescriptorValues(f)).ToList();
-            RouteConstraints = inner.RouteConstraints.Select(r => new RouteDataActionConstraintValues(r)).ToList();
+            Parameters = inner.Parameters?.Select(p => new ParameterDescriptorValues(p)).ToList();
+            FilterDescriptors = inner.FilterDescriptors?.Select(f => new FilterDescriptorValues(f)).ToList();
+            RouteConstraints = inner.RouteConstraints?.Select(r => new RouteDataActionConstraintValues(r)).ToList();
             AttributeRouteInfo = new AttributeRouteInfoValues(inner.AttributeRouteInfo);
-            RouteValueDefaults = inner.RouteValueDefaults.ToDictionary(i => i.Key, i => i.Value.ToString());
+            RouteValueDefaults = inner.RouteValueDefaults?.ToDictionary(i => i.Key, i => i.Value.ToString());
             ActionConstraints = inner.ActionConstraints?.Select(a => new ActionConstraintValues(a))?.ToList();
             HttpMethods =
                 inner.ActionConstraints?.OfType<HttpMethodConstraint>().SelectMany(c => c.HttpMethods).ToList();
@@ -51,19 +51,19 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The parameters of the action as <see cref="ParameterDescriptorValues"/>.
         /// See <see cref="ActionDescriptor.Parameters"/>.
         /// </summary>
-        public List<ParameterDescriptorValues> Parameters { get; }
+        public IReadOnlyList<ParameterDescriptorValues> Parameters { get; }
 
         /// <summary>
         /// The filters of the action as <see cref="FilterDescriptorValues"/>.
         /// See <see cref="ActionDescriptor.FilterDescriptors"/>.
         /// </summary>
-        public List<FilterDescriptorValues> FilterDescriptors { get; }
+        public IReadOnlyList<FilterDescriptorValues> FilterDescriptors { get; }
 
         /// <summary>
         /// The route constraints of the action as <see cref="RouteDataActionConstraintValues"/>.
         /// See <see cref="ActionDescriptor.RouteConstraints"/>
         /// </summary>
-        public List<RouteDataActionConstraintValues> RouteConstraints { get; }
+        public IReadOnlyList<RouteDataActionConstraintValues> RouteConstraints { get; }
 
         /// <summary>
         /// The attribute route info of the action as <see cref="AttributeRouteInfoValues"/>.
@@ -80,12 +80,12 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// The action constraints of the action as <see cref="ActionConstraintValues"/>.
         /// See <see cref="ActionDescriptor.ActionConstraints"/>.
         /// </summary>
-        public List<ActionConstraintValues> ActionConstraints { get; }
+        public IReadOnlyList<ActionConstraintValues> ActionConstraints { get; }
 
         /// <summary>
         /// The http methods this action supports.
         /// </summary>
-        public List<string> HttpMethods { get; }
+        public IReadOnlyList<string> HttpMethods { get; }
 
         /// <summary>
         /// See <see cref="ActionDescriptor.Properties"/>.

@@ -7,7 +7,8 @@ namespace LoggingWebSite.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        [ActionName("Index")]
+        public IActionResult Default()
         {
             return View();
         }

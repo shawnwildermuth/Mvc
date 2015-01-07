@@ -111,6 +111,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         /// <summary>
+        /// Generates a flattened list of the given scope node
+        /// tree using pre-order traversal
+        /// </summary>
+        /// <param name="root"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> FlattenScopeTree(this ScopeNodeDto root)
+        {
+            var scopes = new List<string>();
+
+            TraverseScopeTree(root, scopes);
+
+            return scopes;
+        }
+
+        /// <summary>
         /// Traverses through the log node tree and gets the log messages whose StateType
         /// matches the supplied data type.
         /// </summary>
@@ -151,6 +166,21 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             return null;
         }
 
+        private static void TraverseScopeTree(ScopeNodeDto root, List<string> scopes)
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            scopes.Add(root.State?.ToString());
+
+            foreach (var childScope in root.Children)
+            {
+                TraverseScopeTree(childScope, scopes);
+            }
+        }
+        
         private static string GetQueryValue(string query, string key)
         {
             var queryString = QueryHelpers.ParseQuery(query);

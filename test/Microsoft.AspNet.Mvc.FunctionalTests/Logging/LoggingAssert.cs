@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using LoggingWebSite;
 using Xunit.Sdk;
@@ -22,17 +23,63 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // these trees is provided.
             if (!AreScopesEqual(expected, actual))
             {
-                var expectedScopes = new List<string>();
-                var actualScopes = new List<string>();
-
-                TraverseScopeTree(expected, expectedScopes);
-                TraverseScopeTree(actual, actualScopes);
-
-                throw new EqualException(expected: string.Join(", ", expectedScopes),
-                                        actual: string.Join(", ", actualScopes));
+                throw new EqualException(
+                    expected: string.Join(",", expected.FlattenScopeTree()),
+                    actual: string.Join(",", actual.FlattenScopeTree()));
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks if a list of items is a sub-set of another list.
+        /// </summary>
+        /// <param name="expected"></param>
+        /// <param name="actual"></param>
+        /// <returns></returns>
+        public static bool Subset(IEnumerable<string> expected, IEnumerable<string> actual)
+        {
+            bool isSubset = true;
+
+            var actualItems = actual.ToArray();
+            var expectedItems = expected.ToArray();
+
+            var expectedFirstItem = expectedItems.First();
+            int actualFirstItemIndex = -1;
+            for (var i = 0; i < actualItems.Length; i++)
+            {
+                if (string.Equals(actualItems[i], expectedFirstItem, StringComparison.OrdinalIgnoreCase))
+                {
+                    actualFirstItemIndex = i;
+                    break;
+                }
+            }
+
+            if (actualFirstItemIndex >= 0
+                && expectedItems.Length <= (actualItems.Length - actualFirstItemIndex))
+            {
+                for (int i = 0, j = actualFirstItemIndex; i < expectedItems.Length; i++, j++)
+                {
+                    if (!string.Equals(expectedItems[i], actualItems[j], StringComparison.OrdinalIgnoreCase))
+                    {
+                        isSubset = false;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                isSubset = false;
+            }
+
+            if(!isSubset)
+            {
+                throw new EqualException(
+                    expected: string.Join(",", expected),
+                    actual: string.Join(",", actual));
+            }
+
+            return isSubset;
         }
 
         /// <summary>
@@ -71,26 +118,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             }
 
             return isChildScopeEqual;
-        }
-
-        /// <summary>
-        /// Traverses the scope node sub-tree and collects the list scopes
-        /// </summary>
-        /// <param name="root"></param>
-        /// <param name="scopes"></param>
-        private static void TraverseScopeTree(ScopeNodeDto root, List<string> scopes)
-        {
-            if (root == null)
-            {
-                return;
-            }
-
-            scopes.Add(root.State?.ToString());
-
-            foreach (var childScope in root.Children)
-            {
-                TraverseScopeTree(childScope, scopes);
-            }
         }
     }
 }

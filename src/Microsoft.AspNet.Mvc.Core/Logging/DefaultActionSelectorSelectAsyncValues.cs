@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
     /// <summary>
     /// Represents the state of <see cref="DefaultActionSelector.SelectAsync(AspNet.Routing.RouteContext)"/>.
     /// </summary>
-    public class DefaultActionSelectorSelectAsyncValues
+    public class DefaultActionSelectorSelectAsyncValues : LoggerStructureBase
     {
         /// <summary>
         /// The name of the state.
@@ -25,23 +27,23 @@ namespace Microsoft.AspNet.Mvc.Logging
         /// <summary>
         /// The list of actions that matched all their route constraints, if any.
         /// </summary>
-        public IReadOnlyList<ActionDescriptor> ActionsMatchingRouteConstraints { get; set; }
+        public IReadOnlyList<ActionDescriptorValues> ActionsMatchingRouteConstraints { get; set; }
 
         /// <summary>
         /// The list of actions that matched all their route constraints, and action constraints, if any.
         /// </summary>
-        public IReadOnlyList<ActionDescriptor> ActionsMatchingActionConstraints { get; set; }
+        public IReadOnlyList<ActionDescriptorValues> ActionsMatchingActionConstraints { get; set; }
 
         /// <summary>
         /// The list of actions that are the best matches. These match all constraints and any additional criteria
         /// for disambiguation.
         /// </summary>
-        public IReadOnlyList<ActionDescriptor> FinalMatches { get; set; }
+        public IReadOnlyList<ActionDescriptorValues> FinalMatches { get; set; }
 
         /// <summary>
         /// The selected action. Will be null if no matches are found or more than one match is found.
         /// </summary>
-        public ActionDescriptor SelectedAction { get; set; }
+        public ActionDescriptorValues SelectedAction { get; set; }
 
         /// <summary>
         /// A summary of the data for display.
@@ -73,9 +75,14 @@ namespace Microsoft.AspNet.Mvc.Logging
             return Summary;
         }
 
-        private string Formatter(ActionDescriptor descriptor)
+        private string Formatter(ActionDescriptorValues descriptor)
         {
-            return descriptor != null ? descriptor.DisplayName : "No action selected";
+            return descriptor != null ? descriptor.Name : "No action selected";
+        }
+
+        public override string Format()
+        {
+            return LogFormatter.FormatStructure(this);
         }
     }
 }

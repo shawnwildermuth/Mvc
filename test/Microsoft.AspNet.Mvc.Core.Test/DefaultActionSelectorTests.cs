@@ -73,12 +73,14 @@ namespace Microsoft.AspNet.Mvc
                 {
                     new HttpMethodConstraint(new string[] { "POST" }),
                 },
-                Parameters = new List<ParameterDescriptor>(),
+                Name = "Matched",
+                DisplayName = "MatchedDisplayName",
             };
 
             var notMatched = new ActionDescriptor()
             {
-                Parameters = new List<ParameterDescriptor>(),
+                Name = "NotMatched",
+                DisplayName = "NotMatchedDisplayName"
             };
 
             var actions = new ActionDescriptor[] { matched, notMatched };
@@ -102,10 +104,15 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
             Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
-            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);
-            Assert.Equal<ActionDescriptor>(new[] { matched }, values.ActionsMatchingActionConstraints);
-            Assert.Equal(matched, Assert.Single(values.FinalMatches));
-            Assert.Equal(matched, values.SelectedAction);
+            
+            Assert.Equal(2, values.ActionsMatchingRouteConstraints.Count);
+            Assert.NotNull(values.SelectedAction);
+            Assert.Equal(matched.Name, values.SelectedAction.Name);
+            Assert.Equal(matched.DisplayName, values.SelectedAction.DisplayName);
+            Assert.Null(values.SelectedAction.FilterDescriptors);
+            Assert.Null(values.SelectedAction.Parameters);
+            Assert.Single(values.SelectedAction.ActionConstraints);
+            Assert.Equal(typeof(HttpMethodConstraint), values.SelectedAction.ActionConstraints[0].ActionConstraintMetadataType);
         }
 
         [Fact]
@@ -144,13 +151,10 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("DefaultActionSelector.SelectAsync", write.Scope);
             var values = Assert.IsType<DefaultActionSelectorSelectAsyncValues>(write.State);
             Assert.Equal("DefaultActionSelector.SelectAsync", values.Name);
-            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingRouteConstraints);
-            Assert.Equal<ActionDescriptor>(actions, values.ActionsMatchingActionConstraints);
-            Assert.Equal<ActionDescriptor>(actions, values.FinalMatches);
             Assert.Null(values.SelectedAction);
-
-            // (does not throw)
-            Assert.NotEmpty(values.Summary);
+            Assert.Equal(2, values.FinalMatches.Count);
+            Assert.Equal(2, values.ActionsMatchingRouteConstraints.Count);
+            Assert.Equal(2, values.ActionsMatchingActionConstraints.Count);
         }
 
         [Fact]
@@ -822,7 +826,7 @@ namespace Microsoft.AspNet.Mvc
             var actionProvider = new Mock<IActionDescriptorsCollectionProvider>(MockBehavior.Strict);
 
             actionProvider
-                .Setup(p => p.ActionDescriptors).Returns(new ActionDescriptorsCollection(actions, 0));
+                .Setup(p => p.ActionDescriptors).Returns(new ActionDescriptorsCollection(actions, version: 0));
 
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionProvider.Object);
 
