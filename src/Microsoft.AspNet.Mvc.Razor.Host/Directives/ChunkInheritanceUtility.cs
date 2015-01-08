@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.FileSystems;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     /// </summary>
     public class ChunkInheritanceUtility
     {
-        private readonly Dictionary<string, CodeTree> _parsedCodeTrees;
+        private readonly ConcurrentDictionary<string, CodeTree> _parsedCodeTrees;
         private readonly MvcRazorHost _razorHost;
         private readonly IFileSystem _fileSystem;
         private readonly IEnumerable<Chunk> _defaultInheritedChunks;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             _razorHost = razorHost;
             _fileSystem = fileSystem;
             _defaultInheritedChunks = defaultInheritedChunks;
-            _parsedCodeTrees = new Dictionary<string, CodeTree>(StringComparer.Ordinal);
+            _parsedCodeTrees = new ConcurrentDictionary<string, CodeTree>(StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                         // we need to ensure the paths are app-relative to allow the GetViewStartLocations
                         // for the current _ViewStart to succeed.
                         codeTree = ParseViewFile(templateEngine, fileInfo, viewStartPath);
-                        _parsedCodeTrees.Add(viewStartPath, codeTree);
+                        _parsedCodeTrees.TryAdd(viewStartPath, codeTree);
                         inheritedChunks.AddRange(codeTree.Chunks);
                     }
                 }
