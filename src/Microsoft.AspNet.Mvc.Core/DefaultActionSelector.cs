@@ -166,6 +166,8 @@ namespace Microsoft.AspNet.Mvc
             constraintContext.Candidates = candidates;
             constraintContext.RouteContext = context;
 
+            // At this point all the possible candidates including the ones without the constraint are present
+            // in the list of candidates.
             foreach (var candidate in candidates)
             {
                 var isMatch = true;
