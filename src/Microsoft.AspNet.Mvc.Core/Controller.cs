@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Mvc
     public class Controller : IActionFilter, IAsyncActionFilter, IOrderedFilter, IDisposable
     {
         private DynamicViewData _viewBag;
+        private ViewDataDictionary _viewData;
         private IViewEngine _viewEngine;
 
         public IServiceProvider Resolver
@@ -109,7 +110,30 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Activate]
-        public ViewDataDictionary ViewData { get; set; }
+        public ViewDataDictionary ViewData
+        {
+            get
+            {
+                if (_viewData == null)
+                {
+                    // This should run only for the controller unit test scenarios
+                    _viewData =
+                        new ViewDataDictionary(new EmptyModelMetadataProvider(),
+                                                ActionContext?.ModelState ?? new ModelStateDictionary());
+                }
+
+                return _viewData;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw
+                        new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(ViewData));
+                }
+                _viewData = value;
+            }
+        }
 
         public dynamic ViewBag
         {
@@ -813,7 +837,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the controller's current 
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current
         /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
@@ -838,7 +862,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a 
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
         /// <paramref name="prefix"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
@@ -873,14 +897,14 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the controller's current 
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current
         /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
         /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
         /// </param>
-        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties 
+        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
         /// which need to be included for the current model.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         [NonAction]
@@ -911,7 +935,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the controller's current 
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current
         /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
@@ -948,7 +972,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a 
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
         /// <paramref name="prefix"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
@@ -956,7 +980,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>
         /// </param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
-        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties 
+        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
         /// which need to be included for the current model.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         [NonAction]
@@ -988,7 +1012,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a 
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
         /// <paramref name="prefix"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>

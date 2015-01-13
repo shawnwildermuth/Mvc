@@ -1297,6 +1297,220 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Same(viewEngine, result.ViewEngine);
         }
 
+        [Theory]
+        [MemberData(nameof(TestabilityViewTestData))]
+        public void ControllerView_InvokedInUnitTests(object modelObject, string viewName)
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = (ViewResult)controller.View_Action(viewName, modelObject);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.ViewData);
+            Assert.Equal(viewName, result.ViewName);
+
+            if (modelObject != null)
+            {
+                var expectedObject = (MyModel)modelObject;
+                Assert.Equal(expectedObject.Property1, ((MyModel)result.ViewData.Model).Property1);
+                Assert.Equal(expectedObject.Property2, ((MyModel)result.ViewData.Model).Property2);
+            }
+            else
+            {
+                Assert.Null(result.ViewData.Model);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TestabilityViewTestData))]
+        public void ControllerPartialView_InvokedInUnitTests(object modelObject, string viewName)
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = (PartialViewResult)controller.PartialView_Action(viewName, modelObject);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.ViewData);
+            Assert.Equal(viewName, result.ViewName);
+
+            if (modelObject != null)
+            {
+                var expectedObject = (MyModel)modelObject;
+                Assert.Equal(expectedObject.Property1, ((MyModel)result.ViewData.Model).Property1);
+                Assert.Equal(expectedObject.Property2, ((MyModel)result.ViewData.Model).Property2);
+            }
+            else
+            {
+                Assert.Null(result.ViewData.Model);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TestabilityContentTestData))]
+        public void ControllerContent_InvokedInUnitTests(string content, string contentType, Encoding encoding)
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = (ContentResult)controller.Content_Action(content, contentType, encoding);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(content, result.Content);
+            Assert.Equal(contentType, result.ContentType);
+            Assert.Equal(encoding, result.ContentEncoding);
+        }
+
+        [Theory]
+        [InlineData("/Created_1", "<html>CreatedBody</html>")]
+        [InlineData(null, null)]
+        public void ControllerCreated_InvokedInUnitTests(string uri, string content)
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = (CreatedResult)controller.Created_Action(uri, content);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(uri, result.Location);
+            Assert.Equal(content, result.Value);
+            Assert.Equal(201, result.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("<html>CreatedBody</html>", "text/html", "Created.html")]
+        [InlineData(null, null, null)]
+        public void ControllerFileContent_InvokedInUnitTests(string content, string contentType, string fileName)
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = (FileContentResult)controller.FileContent_Action(content, contentType, fileName);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(contentType, result.ContentType);
+            Assert.Equal(fileName ?? string.Empty, result.FileDownloadName);
+
+            if (content == null)
+            {
+                Assert.Null(result.FileContents);
+            }
+            else
+            {
+                Assert.Equal(content, Encoding.UTF8.GetString(result.FileContents));
+            }
+        }
+
+        [Theory]
+        [InlineData("<html>CreatedBody</html>", "text/html", "Created.html")]
+        [InlineData(null, null, null)]
+        public void ControllerFileStream_InvokedInUnitTests(string content, string contentType, string fileName)
+        {
+            // Arrange
+            var controller = new TestabilityController();
+
+            // Act
+            var result = (FileStreamResult)controller.FileStream_Action(content, contentType, fileName);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(contentType, result.ContentType);
+            Assert.Equal(fileName ?? string.Empty, result.FileDownloadName);
+            if (content == null)
+            {
+                Assert.Null(result.FileStream);
+            }
+            else
+            {
+                Assert.Equal(content, new StreamReader(result.FileStream, Encoding.UTF8).ReadToEnd());
+            }
+        }
+
+        public static IEnumerable<object[]> TestabilityViewTestData
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    null,
+                    null
+                };
+
+                yield return new object[]
+                {
+                    new MyModel { Property1 = "Property_1", Property2 = "Property_2" },
+                    "ViewName_1"
+                };
+            }
+        }
+
+        public static IEnumerable<object[]> TestabilityContentTestData
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    null,
+                    null,
+                    null
+                };
+
+                yield return new object[]
+                {
+                    "Content_1",
+                    "text/asp",
+                    Encoding.ASCII
+                };
+            }
+        }
+
+        private class TestabilityController : Controller
+        {
+            public IActionResult View_Action(string viewName, object data)
+            {
+                return View(viewName, data);
+            }
+
+            public IActionResult PartialView_Action(string viewName, object data)
+            {
+                return PartialView(viewName, data);
+            }
+
+            public IActionResult Content_Action(string content, string contentType, Encoding encoding)
+            {
+                return Content(content, contentType, encoding);
+            }
+
+            public IActionResult Created_Action(string uri, object objectValue)
+            {
+                return Created(uri, objectValue);
+            }
+
+            public IActionResult FileContent_Action(string content, string contentType, string fileName)
+            {
+                var contentArray = string.IsNullOrEmpty(content) ? null : Encoding.UTF8.GetBytes(content);
+                return File(contentArray, contentType, fileName);
+            }
+
+            public IActionResult FileStream_Action(string content, string contentType, string fileName)
+            {
+                var memoryStream = string.IsNullOrEmpty(content) ? null :
+                                                       new MemoryStream(Encoding.UTF8.GetBytes(content));
+                return File(memoryStream, contentType, fileName);
+            }
+        }
+
         private static Controller GetController(IModelBinder binder, IValueProvider provider)
         {
             var metadataProvider = new DataAnnotationsModelMetadataProvider();
