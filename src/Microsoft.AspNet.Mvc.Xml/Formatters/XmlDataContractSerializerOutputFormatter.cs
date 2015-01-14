@@ -1,33 +1,33 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Serialization;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Xml
 {
     /// <summary>
     /// This class handles serialization of objects
-    /// to XML using <see cref="XmlSerializer"/>
+    /// to XML using <see cref="DataContractSerializer"/>
     /// </summary>
-    public class XmlSerializerOutputFormatter : XmlOutputFormatter
+    public class XmlDataContractSerializerOutputFormatter : XmlOutputFormatter
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="XmlSerializerOutputFormatter"/>
-        /// with default XmlWriterSettings.
+        /// Initializes a new instance of <see cref="XmlDataContractSerializerOutputFormatter"/>
+        /// with default XmlWriterSettings
         /// </summary>
-        public XmlSerializerOutputFormatter()
+        public XmlDataContractSerializerOutputFormatter()
             : this(GetDefaultXmlWriterSettings())
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="XmlSerializerOutputFormatter"/>
+        /// Initializes a new instance of <see cref="XmlDataContractSerializerOutputFormatter"/>
         /// </summary>
-        /// <param name="writerSettings">The settings to be used by the <see cref="XmlSerializer"/>.</param>
-        public XmlSerializerOutputFormatter([NotNull] XmlWriterSettings writerSettings)
+        /// <param name="writerSettings">The settings to be used by the <see cref="DataContractSerializer"/>.</param>
+        public XmlDataContractSerializerOutputFormatter([NotNull] XmlWriterSettings writerSettings)
             : base(writerSettings)
         {
         }
@@ -39,16 +39,20 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Create a new instance of <see cref="XmlSerializer"/> for the given object type.
+        /// Create a new instance of <see cref="DataContractSerializer"/> for the given object type.
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
-        /// <returns>A new instance of <see cref="XmlSerializer"/></returns>
-        protected virtual XmlSerializer CreateSerializer([NotNull] Type type)
+        /// <returns>A new instance of <see cref="DataContractSerializer"/></returns>
+        protected virtual DataContractSerializer CreateSerializer([NotNull] Type type)
         {
             try
             {
+#if ASPNET50
+                // Verify that type is a valid data contract by forcing the serializer to try to create a data contract
+                FormattingUtilities.XsdDataContractExporter.GetRootElementName(type);
+#endif
                 // If the serializer does not support this type it will throw an exception.
-                return new XmlSerializer(type);
+                return new DataContractSerializer(type);
             }
             catch (Exception)
             {
@@ -61,8 +65,6 @@ namespace Microsoft.AspNet.Mvc
         /// <inheritdoc />
         public override Task WriteResponseBodyAsync([NotNull] OutputFormatterContext context)
         {
-            var response = context.ActionContext.HttpContext.Response;
-
             var tempWriterSettings = WriterSettings.Clone();
             tempWriterSettings.Encoding = context.SelectedEncoding;
 
@@ -74,8 +76,9 @@ namespace Microsoft.AspNet.Mvc
                 var runtimeType = context.Object == null ? null : context.Object.GetType();
 
                 var type = GetSerializableType(context.DeclaredType, runtimeType);
-                var xmlSerializer = CreateSerializer(type);
-                xmlSerializer.Serialize(xmlWriter, context.Object);
+                var dataContractSerializer = CreateSerializer(type);
+                var responseObject = TryWrapSerializableErrorObject(context.Object);
+                dataContractSerializer.WriteObject(xmlWriter, responseObject);
             }
 
             return Task.FromResult(true);

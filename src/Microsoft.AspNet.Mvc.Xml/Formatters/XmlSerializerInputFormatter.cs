@@ -6,26 +6,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Serialization;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNet.Mvc.Xml
 {
     /// <summary>
     /// This class handles deserialization of input XML data
-    /// to strongly-typed objects using <see cref="DataContractSerializer"/>.
+    /// to strongly-typed objects using <see cref="XmlSerializer"/>
     /// </summary>
-    public class XmlDataContractSerializerInputFormatter : IInputFormatter
+    public class XmlSerializerInputFormatter : IInputFormatter
     {
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
 
         /// <summary>
-        /// Initializes a new instance of DataContractSerializerInputFormatter
+        /// Initializes a new instance of XmlSerializerInputFormatter.
         /// </summary>
-        public XmlDataContractSerializerInputFormatter()
+        public XmlSerializerInputFormatter()
         {
             SupportedEncodings = new List<Encoding>();
             SupportedEncodings.Add(Encodings.UTF8EncodingWithoutBOM);
@@ -101,12 +101,19 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Called during deserialization to get the <see cref="XmlObjectSerializer"/>.
+        /// Called during deserialization to get the <see cref="XmlSerializer"/>.
         /// </summary>
-        /// <returns>The <see cref="XmlObjectSerializer"/> used during deserialization.</returns>
-        protected virtual XmlObjectSerializer CreateDataContractSerializer(Type type)
+        /// <returns>The <see cref="XmlSerializer"/> used during deserialization.</returns>
+        protected virtual XmlSerializer CreateXmlSerializer(Type type)
         {
-            return new DataContractSerializer(type);
+            // check if the type to which we are deserliazing is of type SerializableError
+            // if yes, then use the SerializableErrorWrapper instead.
+            if (type == Constants.SerializableErrorType)
+            {
+                type = Constants.SerializableErrorWrapperType;
+            }
+
+            return new XmlSerializer(type);
         }
 
         private object GetDefaultValueForType(Type modelType)
@@ -126,8 +133,20 @@ namespace Microsoft.AspNet.Mvc
 
             using (var xmlReader = CreateXmlReader(new DelegatingStream(request.Body)))
             {
-                var xmlSerializer = CreateDataContractSerializer(type);
-                return Task.FromResult(xmlSerializer.ReadObject(xmlReader));
+                var xmlSerializer = CreateXmlSerializer(type);
+
+                var deserializedObject = xmlSerializer.Deserialize(xmlReader);
+
+                // Get the original SerializableError object from the wrapper
+                var serializableErrorWrapper = deserializedObject as SerializableErrorWrapper;
+
+                if (type == Constants.SerializableErrorType
+                    && serializableErrorWrapper != null)
+                {
+                    deserializedObject = serializableErrorWrapper.SerializableError;
+                }
+
+                return Task.FromResult(deserializedObject);
             }
         }
     }

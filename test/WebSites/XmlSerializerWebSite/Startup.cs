@@ -3,10 +3,12 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
-namespace XmlSerializerWebSite
+namespace XmlFormattersWebSite
 {
     public class Startup
     {
@@ -23,7 +25,32 @@ namespace XmlSerializerWebSite
                 services.Configure<MvcOptions>(options =>
                     {
                         options.InputFormatters.Clear();
-                        options.InputFormatters.Insert(0, new XmlSerializerInputFormatter());
+                        options.OutputFormatters.Clear();
+
+                        var xmlSerializerInputFormatter = new XmlSerializerInputFormatter();
+                        xmlSerializerInputFormatter.SupportedMediaTypes.Clear();
+                        xmlSerializerInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-xmlser"));
+                        xmlSerializerInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-xmlser"));
+
+                        var xmlSerializerOutputFormatter = new XmlSerializerOutputFormatter();
+                        xmlSerializerOutputFormatter.SupportedMediaTypes.Clear();
+                        xmlSerializerOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-xmlser"));
+                        xmlSerializerOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-xmlser"));
+
+                        var dcsInputFormatter = new XmlDataContractSerializerInputFormatter();
+                        dcsInputFormatter.SupportedMediaTypes.Clear();
+                        dcsInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-dcs"));
+                        dcsInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-dcs"));
+
+                        var dcsOutputFormatter = new XmlDataContractSerializerOutputFormatter();
+                        dcsOutputFormatter.SupportedMediaTypes.Clear();
+                        dcsOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-dcs"));
+                        dcsOutputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-dcs"));
+
+                        options.InputFormatters.Add(dcsInputFormatter);
+                        options.InputFormatters.Add(xmlSerializerInputFormatter);
+                        options.OutputFormatters.Add(dcsOutputFormatter);
+                        options.OutputFormatters.Add(xmlSerializerOutputFormatter);
                     });
             });
 

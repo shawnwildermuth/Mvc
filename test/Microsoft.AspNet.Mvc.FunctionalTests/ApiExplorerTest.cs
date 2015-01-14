@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Xunit;
@@ -696,7 +697,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("Controller", "text/xml", "Microsoft.AspNet.Mvc.XmlDataContractSerializerOutputFormatter")]
+        [InlineData("Controller", "text/xml", "Microsoft.AspNet.Mvc.Xml.XmlDataContractSerializerOutputFormatter")]
         [InlineData("Action", "application/json", "Microsoft.AspNet.Mvc.JsonOutputFormatter")]
         public async Task ApiExplorer_ResponseContentType_OverrideOnAction(
             string action,

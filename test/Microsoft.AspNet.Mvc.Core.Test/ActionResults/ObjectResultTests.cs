@@ -8,7 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Core;
+using Microsoft.AspNet.PipelineCore;
+using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
@@ -226,7 +227,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
 
             var httpResponse = GetMockHttpResponse();
             var actionContext =
-                CreateMockActionContext(httpResponse.Object,
+                CreateMockActionContext(
+                                        httpResponse.Object,
                                         requestAcceptHeader: "text/custom;q=0.1,application/json;q=0.9",
                                         requestContentType: "application/custom");
             var result = new ObjectResult(input);
@@ -256,7 +258,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpResponse.SetupProperty<string>(o => o.ContentType);
             httpResponse.SetupGet(r => r.Body).Returns(stream);
 
-            var actionContext = CreateMockActionContext(httpResponse.Object,
+            var actionContext = CreateMockActionContext(
+                                                        httpResponse.Object,
                                                         requestAcceptHeader: null,
                                                         requestContentType: "application/json");
             var input = "testInput";
@@ -296,7 +299,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpResponse.SetupProperty<string>(o => o.ContentType);
             httpResponse.SetupGet(r => r.Body).Returns(stream);
 
-            var actionContext = CreateMockActionContext(httpResponse.Object,
+            var actionContext = CreateMockActionContext(
+                                                        httpResponse.Object,
                                                         requestAcceptHeader: acceptHeader,
                                                         requestContentType: "application/xml");
             var requestContentType = MediaTypeHeaderValue.Parse("application/xml");
@@ -354,7 +358,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpResponse.SetupProperty<string>(o => o.ContentType);
             httpResponse.SetupGet(r => r.Body).Returns(stream);
 
-            var actionContext = CreateMockActionContext(httpResponse.Object,
+            var actionContext = CreateMockActionContext(
+                                                        httpResponse.Object,
                                                         requestAcceptHeader: null,
                                                         requestContentType: null);
             var input = "testInput";
@@ -383,7 +388,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpResponse.SetupProperty<string>(o => o.ContentType);
             httpResponse.SetupGet(r => r.Body).Returns(stream);
 
-            var actionContext = CreateMockActionContext(httpResponse.Object,
+            var actionContext = CreateMockActionContext(
+                                                        httpResponse.Object,
                                                         requestAcceptHeader: null,
                                                         requestContentType: null);
             var input = "testInput";
@@ -414,7 +420,8 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
             httpResponse.SetupProperty<string>(o => o.ContentType);
             httpResponse.SetupGet(r => r.Body).Returns(stream);
 
-            var actionContext = CreateMockActionContext(httpResponse.Object,
+            var actionContext = CreateMockActionContext(
+                                                        httpResponse.Object,
                                                         requestAcceptHeader: null,
                                                         requestContentType: null);
 
@@ -555,7 +562,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test.ActionResults
         [InlineData("application/xml;q=0.9,*/*;q=0.5", "application/json; charset=utf-8", false)]
         [InlineData("application/xml;q=0.9,text/plain;q=0.5", "application/xml; charset=utf-8", true)]
         [InlineData("application/xml;q=0.9,*/*;q=0.5", "application/xml; charset=utf-8", true)]
-        public async Task ObjectResult_WildcardAcceptMediaType_AndExplicitResponseContentType(
+        public async Task ObjectResult_WildcardAcceptMediaType_AndProducesAttribute(
             string acceptHeader,
             string expectedResponseContentType,
             bool respectBrowserAcceptHeader)
