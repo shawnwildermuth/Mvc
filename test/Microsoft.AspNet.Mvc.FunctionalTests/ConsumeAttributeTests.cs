@@ -30,15 +30,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "http://localhost/ConsumesAttribute_Company/CreateDummy");
+                "http://localhost/ConsumesAttribute_Company/CreateProduct");
 
             // Act
             var response = await client.SendAsync(request);
-            var dummyObject = JsonConvert.DeserializeObject<Dummy>(
+            var product = JsonConvert.DeserializeObject<Product>(
                     await response.Content.ReadAsStringAsync());
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            Assert.Null(dummyObject);
+            Assert.Null(product);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "http://localhost/ConsumesAttribute_AmbiguousActions/CreateDummy");
+                "http://localhost/ConsumesAttribute_AmbiguousActions/CreateProduct");
 
             // Act
             var response = await client.SendAsync(request);
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(
                 "Multiple actions matched. The following actions matched route data and had all constraints "+
                 "satisfied:____ActionConstraintsWebSite.ConsumesAttribute_NoFallBackActionController."+
-                "CreateDummy__ActionConstraintsWebSite.ConsumesAttribute_NoFallBackActionController.CreateDummy",
+                "CreateProduct__ActionConstraintsWebSite.ConsumesAttribute_NoFallBackActionController.CreateProduct",
                 exception.ExceptionMessage);
         }
 
@@ -74,15 +74,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "http://localhost/ConsumesAttribute_PassThrough/CreateDummy");
+                "http://localhost/ConsumesAttribute_PassThrough/CreateProduct");
 
             // Act
             var response = await client.SendAsync(request);
-            var dummyObject = JsonConvert.DeserializeObject<Dummy>(
+            var product = JsonConvert.DeserializeObject<Product>(
                       await response.Content.ReadAsStringAsync());
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            Assert.Null(dummyObject);
+            Assert.Null(product);
         }
 
         [Theory]
@@ -97,15 +97,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var input = "{SampleString:\""+requestContentType+"\"}";
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "http://localhost/ConsumesAttribute_AmbiguousActions/CreateDummy");
+                "http://localhost/ConsumesAttribute_AmbiguousActions/CreateProduct");
             request.Content = new StringContent(input, Encoding.UTF8, requestContentType);
             // Act
             var response = await client.SendAsync(request);
-            var dummyObject = JsonConvert.DeserializeObject<Dummy>(
+            var product = JsonConvert.DeserializeObject<Product>(
                       await response.Content.ReadAsStringAsync());
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(requestContentType, dummyObject.SampleString);
+            Assert.Equal(requestContentType, product.SampleString);
         }
 
         [Theory]
@@ -120,17 +120,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var input = "{SampleString:\"" + requestContentType + "\"}";
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "http://localhost/ConsumesAttribute_OverridesBase/CreateDummy");
+                "http://localhost/ConsumesAttribute_OverridesBase/CreateProduct");
             request.Content = new StringContent(input, Encoding.UTF8, requestContentType);
             var expectedString = "ConsumesAttribute_OverridesBaseController_" + requestContentType;
 
             // Act
             var response = await client.SendAsync(request);
-            var dummyObject = JsonConvert.DeserializeObject<Dummy>(
+            var product = JsonConvert.DeserializeObject<Product>(
                       await response.Content.ReadAsStringAsync());
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedString, dummyObject.SampleString);
+            Assert.Equal(expectedString, product.SampleString);
         }
 
         [Fact]
@@ -140,22 +140,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var server = TestServer.Create(_provider, _app);
             var client = server.CreateClient();
 
-            var input = "<Dummy xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            var input = "<Product xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "xmlns=\"http://schemas.datacontract.org/2004/07/ActionConstraintsWebSite\">" +
-                "<SampleString>application/xml</SampleString></Dummy>";
+                "<SampleString>application/xml</SampleString></Product>";
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "http://localhost/ConsumesAttribute_Overrides/CreateDummy");
+                "http://localhost/ConsumesAttribute_Overrides/CreateProduct");
             request.Content = new StringContent(input, Encoding.UTF8, "application/xml");
             var expectedString = "ConsumesAttribute_OverridesController_application/xml";
 
             // Act
             var response = await client.SendAsync(request);
             var responseString = await response.Content.ReadAsStringAsync();
-            var dummyObject = JsonConvert.DeserializeObject<Dummy>(responseString);
+            var product = JsonConvert.DeserializeObject<Product>(responseString);
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedString, dummyObject.SampleString);
+            Assert.Equal(expectedString, product.SampleString);
         }
     }
 }

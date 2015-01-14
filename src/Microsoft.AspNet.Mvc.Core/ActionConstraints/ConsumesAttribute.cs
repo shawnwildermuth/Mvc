@@ -9,8 +9,7 @@ using Microsoft.AspNet.Mvc.HeaderValueAbstractions;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Specifies the allowed content types which can be used to help in selecting the action based on request's
-    /// content-type.
+    /// Specifies the allowed content types which can be used to select the action based on request's content-type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class ConsumesAttribute : Attribute, IResourceFilter, IConsumesActionConstraint
@@ -18,24 +17,29 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Creates a new instance of <see cref="ConsumesAttribute"/>.
         /// </summary>
-        public ConsumesAttribute(string contentType, params string[] otherContentTypes)
+        public ConsumesAttribute([NotNull] string contentType, params string[] otherContentTypes)
         {
             ContentTypes = GetContentTypes(contentType, otherContentTypes);
         }
 
-        public int Order { get; } = Int32.MaxValue - 10;
+        // The value used is a non default value so that it avoids getting mixed with other action constraints
+        // with default order.
+        /// <inheritdoc />
+        int IActionConstraint.Order { get; } = 200;
 
+        /// <inheritdoc />
         public IList<MediaTypeHeaderValue> ContentTypes { get; set; }
 
+        /// <inheritdoc />
         public void OnResourceExecuting([NotNull] ResourceExecutingContext context)
         {
             MediaTypeHeaderValue requestContentType = null;
             MediaTypeHeaderValue.TryParse(context.HttpContext.Request.ContentType, out requestContentType);
-            if (context.ActionDescriptor.FilterDescriptors.Last().Filter == this)
+            if (context.ActionDescriptor.FilterDescriptors.Last(
+                filter => filter.Filter is IConsumesActionConstraint).Filter == this)
             {
                 // Only execute if this is the last filter before calling the action.
-                // This is because we want to avoid running filters which were inherited when there was already a filter
-                // on the action. This ensures that we only run the filter which is closest to the action.
+                // This ensures that we only run the filter which is closest to the action.
                 if (requestContentType != null &&
                     !ContentTypes.Any(contentType => contentType.IsSubsetOf(requestContentType)))
                 {
@@ -44,18 +48,25 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <inheritdoc />
         public void OnResourceExecuted([NotNull] ResourceExecutedContext context)
         {
         }
 
         private bool IsApplicable(ActionConstraintContext context)
         {
-            return context.CurrentCandidate.Action.FilterDescriptors.Last(filter => filter.Filter is ConsumesAttribute).Filter == this;
+            // If there are multiple IConsumeActionConstraints which are defined at the class and
+            // at the action level, the one closest to the action overrides the others. To ensure this
+            // we take advantage of the fact that ConsumesAttribute is both an IActionFilter and an
+            // IConsumeActionConstraint. Since filterdescriptor collection is ordered (the last filter is the one
+            // closest to the action), we apply this constraint only if there is no IConsumeActionConstraint after this.
+            return context.CurrentCandidate.Action.FilterDescriptors.Last(
+                filter => filter.Filter is IConsumesActionConstraint).Filter == this;
         }
 
         public bool Accept(ActionConstraintContext context)
         {
-            // First check to see if this is applicble
+            // First check to see if this is applicable
             if (!IsApplicable(context))
             {
                 // since this constraint is not applicable it should return true.
@@ -86,10 +97,17 @@ namespace Microsoft.AspNet.Mvc
             var firstCandidate = context.Candidates[0];
             if (firstCandidate != context.CurrentCandidate)
             {
-                // If the current candidate has reached here, its not a match.
+                // If the current candidate is not same as the first candidate,
+                // we need not probe other candidates to see if they apply.
+                // Only the first candidate is allowed to probe other candidates and based on the result select itself.
                 return false;
             }
 
+            // Run the matching logic for all IConsumesActionConstraints we can find, and see what matches.
+            // 1). If we have a unique best match, then only that constraint should return true.
+            // 2). If we have multiple matches, then all constraints that match will return true
+            // , resulting in ambiguity(maybe).
+            // 3). If we have no matches, then we choose the first constraint to return true.It will later return a 415
             foreach (var candidate in context.Candidates)
             {
                 if (candidate == firstCandidate)

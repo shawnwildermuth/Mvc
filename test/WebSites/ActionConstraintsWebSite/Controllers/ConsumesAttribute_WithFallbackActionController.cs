@@ -10,18 +10,18 @@ namespace ActionConstraintsWebSite
     public class ConsumesAttribute_WithFallbackActionController : Controller
     {
         [Consumes("application/json")]
-        public Dummy CreateDummy([FromBody] DummyClass_Json jsonInput)
+        public Product CreateProduct([FromBody] Product_Json jsonInput)
         {
             return jsonInput;
         }
 
         [Consumes("application/xml")]
-        public Dummy CreateDummy([FromBody] DummyClass_Xml xmlInput)
+        public Product CreateProduct([FromBody] Product_Xml xmlInput)
         {
             return xmlInput;
         }
 
-        public Dummy CreateDummy([FromBody] DummyClass_Text defaultInput)
+        public Product CreateProduct([FromBody] Product_Text defaultInput)
         {
             return defaultInput;
         }

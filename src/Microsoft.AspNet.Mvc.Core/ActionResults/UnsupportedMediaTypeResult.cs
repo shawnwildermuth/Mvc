@@ -1,23 +1,19 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if ASPNET50
-using System.Net;
-#endif
-
 namespace Microsoft.AspNet.Mvc
 {
-    public class UnsupportedMediaTypeResult : ActionResult
+    /// <summary>
+    /// A <see cref="HttpStatusCodeResult"/> that when
+    /// executed will produce a UnSupportedMediaType (415) response.
+    /// </summary>
+    public class UnsupportedMediaTypeResult : HttpStatusCodeResult
     {
-        public override void ExecuteResult([NotNull] ActionContext context)
+        /// <summary>
+        /// Creates a new instance of <see cref="UnsupportedMediaTypeResult"/>.
+        /// </summary>
+        public UnsupportedMediaTypeResult() : base(415)
         {
-            var response = context.HttpContext.Response;
-
-#if ASPNET50
-            response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
-#else
-            response.StatusCode = 415;
-#endif
         }
     }
 }

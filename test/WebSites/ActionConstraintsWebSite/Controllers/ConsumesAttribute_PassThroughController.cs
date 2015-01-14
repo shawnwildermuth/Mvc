@@ -10,7 +10,7 @@ namespace ActionConstraintsWebSite
     public class ConsumesAttribute_PassThroughController : Controller
     {
         [Consumes("application/json")]
-        public Dummy CreateDummy([FromBody] DummyClass_Json jsonInput)
+        public Product CreateProduct([FromBody] Product_Json jsonInput)
         {
             return jsonInput;
         }

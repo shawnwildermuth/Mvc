@@ -9,18 +9,18 @@ namespace ActionConstraintsWebSite
     public class ConsumesAttribute_OverridesBaseController : Controller
     {
         [Consumes("text/json")]
-        public Dummy CreateDummy([FromBody] DummyClass_Json dummy)
+        public Product CreateProduct([FromBody] Product_Json product)
         {
             // should be picked if request content type is application/xml and not application/json.
-            dummy.SampleString = "ConsumesAttribute_OverridesBaseController_text/json";
-            return dummy;
+            product.SampleString = "ConsumesAttribute_OverridesBaseController_text/json";
+            return product;
         }
 
-        public virtual IActionResult CreateDummy([FromBody] Dummy dummy)
+        public virtual IActionResult CreateProduct([FromBody] Product product)
         {
             // should be picked if request content type is application/json.
-            dummy.SampleString = "ConsumesAttribute_OverridesBaseController_application/json";
-            return new ObjectResult(dummy);
+            product.SampleString = "ConsumesAttribute_OverridesBaseController_application/json";
+            return new ObjectResult(product);
         }
     }
 }
