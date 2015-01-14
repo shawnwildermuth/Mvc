@@ -4,6 +4,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -21,12 +22,9 @@ namespace Microsoft.AspNet.Mvc
 
             if (!string.IsNullOrEmpty(ContentType))
             {
-                response.ContentType = ContentType;
-            }
-
-            if (ContentEncoding != null)
-            {
-                response.Headers["Content-Encoding"] = ContentEncoding.EncodingName;
+                var contentTypeHeader = new MediaTypeHeaderValue(ContentType);
+                contentTypeHeader.Encoding = ContentEncoding;
+                response.ContentType = contentTypeHeader.ToString();
             }
 
             if (Content != null)
