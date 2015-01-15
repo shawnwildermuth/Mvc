@@ -85,13 +85,7 @@ namespace Microsoft.AspNet.Mvc
 
         private static HttpContext GetHttpContext()
         {
-            var httpContext = new Mock<HttpContext>();
-            var realContext = new DefaultHttpContext();
-            var response = realContext.Response;
-            httpContext.Setup(o => o.Response)
-                       .Returns(response);
-
-            return httpContext.Object;
+            return new DefaultHttpContext();
         }
     }
 }
