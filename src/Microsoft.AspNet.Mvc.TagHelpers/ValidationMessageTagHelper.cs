@@ -52,9 +52,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     // We check for whitespace to detect scenarios such as:
                     // <span validation-for="Name">
                     // </span>
-                    if (string.IsNullOrWhiteSpace(childContent) && string.IsNullOrEmpty(output.Content))
+                    if (string.IsNullOrWhiteSpace(childContent))
                     {
-                        output.Content = tagBuilder.InnerHtml;
+                        if (string.IsNullOrWhiteSpace(output.Content))
+                        {
+                            output.Content = tagBuilder.InnerHtml;
+                        }
+                    }
+                    else if (string.IsNullOrEmpty(output.Content))
+                    {
+                        output.Content = childContent;
                     }
                 }
             }

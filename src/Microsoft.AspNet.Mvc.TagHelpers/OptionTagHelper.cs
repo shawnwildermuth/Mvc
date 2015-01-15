@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// </summary>
     /// <remarks>
     /// This <see cref="ITagHelper"/> works in conjunction with <see cref="SelectTagHelper"/>. It reads elements 
-    /// content but does not modify. The only modification it makes is to add a <c>selected</c> attribute in some 
-    /// cases.
+    /// content but does not modify that content. The only modification it makes is to add a <c>selected</c> attribute 
+    /// in some cases.
     /// </remarks>
     public class OptionTagHelper : TagHelper
     {

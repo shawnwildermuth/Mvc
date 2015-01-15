@@ -122,9 +122,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData("Content of validation message", null, null)]
+        [InlineData("Content of validation message", null, "Content of validation message")]
         [InlineData("Content of validation message", "Some Content", "Some Content")]
         [InlineData("\r\n  \r\n", "", "New HTML")]
+        [InlineData("\r\n  \r\n", "\r\n  \r\n", "New HTML")]
         [InlineData("\r\n  \r\n", "Some Content", "Some Content")]
         public async Task ProcessAsync_MergesTagBuilderFromGenerateValidationMessage(
             string childContent, string outputContent, string expectedOutputContent)
