@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IAssemblyLoadContext _loader;
         private readonly ICompilerOptionsProvider _compilerOptionsProvider;
 
-        private readonly Lazy<List<MetadataReference>> _applicationReferences;
+        private readonly Lazy<IReadOnlyList<MetadataReference>> _applicationReferences;
 
         private readonly string _classPrefix;
 
@@ -51,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             _environment = environment;
             _loader = loaderAccessor.GetLoadContext(typeof(RoslynCompilationService).GetTypeInfo().Assembly);
             _libraryManager = libraryManager;
-            _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
+            _applicationReferences = new Lazy<IReadOnlyList<MetadataReference>>(GetApplicationReferences);
             _compilerOptionsProvider = compilerOptionsProvider;
             _classPrefix = host.MainClassNamePrefix;
         }
@@ -126,16 +127,34 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private List<MetadataReference> GetApplicationReferences()
+        private IReadOnlyList<MetadataReference> GetApplicationReferences()
         {
             var references = new List<MetadataReference>();
 
-            var export = _libraryManager.GetAllExports(_environment.ApplicationName);
+            // Get the MetadataReference for the executing application. If it's a Roslyn reference,
+            // we can copy the references created when compiling the application to the Razor page being compiled.
+            // This avoids performing expensive calls to MetadataReference.CreateFromImage.
+            var libraryExport = _libraryManager.GetLibraryExport(_environment.ApplicationName);
+            if (libraryExport.MetadataReferences.Count > 0)
+            {
+                Debug.Assert(libraryExport.MetadataReferences.Count == 1,
+                             "Expected 1 MetadataReferences, found " + libraryExport.MetadataReferences.Count);
+                var roslynReference = libraryExport.MetadataReferences[0] as IRoslynMetadataReference;
+                if (roslynReference != null)
+                {
+                    var compilationReference = (CompilationReference)roslynReference.MetadataReference;
 
+                    references.AddRange(compilationReference.Compilation.References);
+                    references.Add(roslynReference.MetadataReference);
+
+                    return references;
+                }
+            }
+
+            var export = _libraryManager.GetAllExports(_environment.ApplicationName);
             foreach (var metadataReference in export.MetadataReferences)
             {
-                // Taken from https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/...
-                // Microsoft.Framework.Runtime.Roslyn/RoslynCompiler.cs#L164
+                // Taken from https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/Microsoft.Framework.Runtime.Roslyn/RoslynCompiler.cs#L164
                 // We don't want to take a dependency on the Roslyn bit directly since it pulls in more dependencies
                 // than the view engine needs (Microsoft.Framework.Runtime) for example
                 references.Add(ConvertMetadataReference(metadataReference));
