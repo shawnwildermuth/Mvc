@@ -1034,7 +1034,7 @@ namespace Microsoft.AspNet.Mvc
         /// <returns>A <see cref="bool"/> that on completion returns <c>true</c> if the ModelState is valid;
         /// false otherwise. </returns>
         [NonAction]
-        public virtual bool TryValidateModel(object model)
+        public virtual bool TryValidateModel([NotNull] object model)
         {
             return TryValidateModel(model, prefix: null);
         }
@@ -1059,6 +1059,7 @@ namespace Microsoft.AspNet.Mvc
             var modelMetadata = MetadataProvider.GetMetadataForType(
                modelAccessor: null,
                modelType: model.GetType());
+            modelMetadata.Model = model;
 
             var operationBindingContext = new OperationBindingContext
             {
@@ -1068,28 +1069,20 @@ namespace Microsoft.AspNet.Mvc
                 HttpContext = Context
             };
 
-            var modelBindingContext = new ModelBindingContext
-            {
-                ModelMetadata = modelMetadata,
-                ModelName = prefix,
-                Model = model,
-                ModelState = ModelState,
-                ValueProvider = BindingContext.ValueProvider,
-                FallbackToEmptyPrefix = true,
-                OperationBindingContext = operationBindingContext,
-                PropertyFilter = (context, propertyName) => true
-            };
-
             var validationContext = new ModelValidationContext(operationBindingContext.MetadataProvider,
                                                                    operationBindingContext.ValidatorProvider,
                                                                    ModelState,
                                                                    modelMetadata,
                                                                    containerMetadata: null);
+            var modelName = string.Empty;
+            if (prefix != null)
+            {
+                modelName = prefix;
+            }
 
-            modelBindingContext.ValidationNode = new ModelValidationNode(modelMetadata, prefix);
-            modelBindingContext.ValidationNode.ValidateAllProperties = true;
-
-            modelBindingContext.ValidationNode.Validate(validationContext);
+            var validationNode = new ModelValidationNode(modelMetadata, modelName);
+            validationNode.ValidateAllProperties = true;
+            validationNode.Validate(validationContext);
 
             return ModelState.IsValid;
         }

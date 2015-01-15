@@ -1298,19 +1298,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public void TryValidateModel_NullModel()
-        {
-            // Arrange
-            var controller = new Controller();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(
-                 () => controller.TryValidateModel(null));
-        }
-
-
-        [Fact]
-        public void TryValidateModelWithValidModel()
+        public void TryValidateModelWithValidModel_ReturnsTrue()
         {
             // Arrange
             var binder = new Mock<IModelBinder>();
@@ -1327,7 +1315,7 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
-        public void TryValidateModelWithInvalidModel_ReturnsTrue()
+        public void TryValidateModelWithInvalidModel_ReturnsFalse()
         {
             // Arrange
             var model = new TryValidateModelModel();
