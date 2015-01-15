@@ -1031,11 +1031,12 @@ namespace Microsoft.AspNet.Mvc
         /// <see cref="IValueProvider"/>.
         /// </summary>
         /// <param name="model">The model instance to update.</param>
-        /// <returns>A <see cref="bool"/> that on completion returns <c>true</c> if the ModelState is valid</returns>
+        /// <returns>A <see cref="bool"/> that on completion returns <c>true</c> if the ModelState is valid;
+        /// false otherwise. </returns>
         [NonAction]
         public virtual bool TryValidateModel(object model)
         {
-            return TryValidateModel(model, null /* prefix */);
+            return TryValidateModel(model, prefix: null);
         }
 
         /// <summary>
@@ -1045,9 +1046,10 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="model">The model instance to update.</param>
         /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>
         /// </param>
-        /// <returns>A <see cref="bool"/> that on completion returns <c>true</c> if the ModelState is valid</returns>
+        /// <returns>A <see cref="bool"/> that on completion returns <c>true</c> if the ModelState is valid;
+        /// false otherwise. </returns>
         [NonAction]
-        public virtual bool TryValidateModel(object model, string prefix)
+        public virtual bool TryValidateModel([NotNull] object model, string prefix)
         {
             if (model == null)
             {
@@ -1084,8 +1086,7 @@ namespace Microsoft.AspNet.Mvc
                                                                    modelMetadata,
                                                                    containerMetadata: null);
 
-            modelBindingContext.ValidationNode = new ModelValidationNode(modelBindingContext.ModelMetadata,
-                                                                               modelBindingContext.ModelName);
+            modelBindingContext.ValidationNode = new ModelValidationNode(modelMetadata, prefix);
             modelBindingContext.ValidationNode.ValidateAllProperties = true;
 
             modelBindingContext.ValidationNode.Validate(validationContext);
