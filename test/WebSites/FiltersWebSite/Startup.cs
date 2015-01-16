@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Routing;
 using Microsoft.Framework.DependencyInjection;
 
 namespace FiltersWebSite
@@ -31,7 +32,7 @@ namespace FiltersWebSite
 
             app.UseErrorReporter();
 
-            app.UseMvc();
+            app.UseMvc(routes => routes.MapRoute("formatRoute", "{controller}/{action}/{id}.{format?}"));
         }
     }
 }
