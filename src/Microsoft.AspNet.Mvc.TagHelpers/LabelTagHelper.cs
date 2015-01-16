@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -50,16 +49,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     // We check for whitespace to detect scenarios such as:
                     // <label for="Name">
                     // </label>
-                    if (string.IsNullOrWhiteSpace(childContent))
+                    if (string.IsNullOrEmpty(output.Content))
                     {
-                        if (string.IsNullOrEmpty(output.Content))
+                        if (string.IsNullOrWhiteSpace(childContent))
                         {
+                            // Provide default label text since there was nothing useful in the Razor source.
                             output.Content = tagBuilder.InnerHtml;
                         }
-                    }
-                    else if (string.IsNullOrEmpty(output.Content))
-                    {
-                        output.Content = childContent;
+                        else
+                        {
+                            output.Content = childContent;
+                        }
                     }
                 }
             }

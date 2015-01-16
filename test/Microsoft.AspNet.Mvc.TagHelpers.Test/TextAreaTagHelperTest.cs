@@ -107,9 +107,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 For = modelExpression,
             };
 
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(),
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var htmlAttributes = new Dictionary<string, string>
             {
                 { "class", "form-control" },
@@ -132,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             tagHelper.Generator = htmlGenerator;
 
             // Act
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
@@ -162,9 +163,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var modelExpression = new ModelExpression(nameof(Model.Text), metadata);
             var tagHelper = new TextAreaTagHelper();
 
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(),
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(expectedTagName, expectedAttributes)
             {
                 PreContent = expectedPreContent,
@@ -186,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             tagHelper.Generator = htmlGenerator;
 
             // Act
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);

@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedPostContent = "original post-content";
 
-            var context = new TagHelperContext(
+            var tagHelperContext = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>
                 {
                     { "id", "myvalidationmessage" },
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             validationMessageTagHelper.Generator = htmlGenerator;
 
             // Act
-            await validationMessageTagHelper.ProcessAsync(context, output);
+            await validationMessageTagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal(4, output.Attributes.Count);

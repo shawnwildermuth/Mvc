@@ -184,9 +184,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
             var modelExpression = new ModelExpression(nameAndId.Name, metadata);
 
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(),
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 PreContent = expectedPreContent,
@@ -211,7 +212,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
@@ -263,9 +264,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var metadata = metadataProvider.GetMetadataForProperty(modelAccessor, containerType, propertyName: "Text");
             var modelExpression = new ModelExpression(nameAndId.Name, metadata);
 
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(),
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 PreContent = expectedPreContent,
@@ -292,7 +294,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
@@ -329,9 +331,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var propertyName = "Property1";
             var expectedTagName = "select";
 
-            var context = new TagHelperContext(contextAttributes,
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(expectedTagName, originalAttributes);
 
             // TODO: https://github.com/aspnet/Mvc/issues/1253
@@ -369,7 +372,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             htmlGenerator.Verify();
@@ -394,9 +397,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var propertyName = "Property1";
             var tagName = "select";
 
-            var context = new TagHelperContext(contextAttributes,
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(tagName, originalAttributes);
 
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -427,7 +431,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             htmlGenerator.Verify();
@@ -462,9 +466,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var expectedTagName = "select";
 
-            var context = new TagHelperContext(contextAttributes,
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 PreContent = expectedPreContent,
@@ -479,7 +484,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
@@ -499,9 +504,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedTagName = "select";
             var expectedMessage = "Cannot determine body for <select>. 'asp-items' must be null if 'asp-for' is null.";
 
-            var context = new TagHelperContext(contextAttributes,
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(expectedTagName, originalAttributes);
             var tagHelper = new SelectTagHelper
             {
@@ -510,7 +516,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => tagHelper.ProcessAsync(context, output));
+                () => tagHelper.ProcessAsync(tagHelperContext, output));
             Assert.Equal(expectedMessage, exception.Message);
         }
 
@@ -531,9 +537,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedMessage = "Cannot parse 'multiple' value '" + multiple +
                 "' for <select>. Acceptable values are 'false', 'true' and 'multiple'.";
 
-            var context = new TagHelperContext(contextAttributes,
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(expectedTagName, originalAttributes);
 
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -549,7 +556,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => tagHelper.ProcessAsync(context, output));
+                () => tagHelper.ProcessAsync(tagHelperContext, output));
             Assert.Equal(expectedMessage, exception.Message);
         }
 

@@ -136,9 +136,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 { "selected", selected },
                 { "value", value },
             };
-            var context = new TagHelperContext(contextAttributes,
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult(originalContent));
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult(originalContent));
             var output = new TagHelperOutput(expectedTagName, originalAttributes)
             {
                 Content = originalContent,
@@ -161,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
 
             // Act
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal(
@@ -193,9 +194,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var originalPreContent = "original pre-content";
             var originalPostContent = "original post-content";
-            var context = new TagHelperContext(contextAttributes,
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult(originalContent));
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult(originalContent));
             var output = new TagHelperOutput(originalTagName, originalAttributes)
             {
                 PreContent = originalPreContent,
@@ -220,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Act & Assert (does not throw)
             // Tag helper would throw an NRE if it used Generator value.
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
         }
 
         [Theory]
@@ -247,9 +249,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             };
             var originalPreContent = "original pre-content";
             var originalPostContent = "original post-content";
-            var context = new TagHelperContext(contextAttributes,
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult(originalContent));
+            var tagHelperContext = new TagHelperContext(
+                contextAttributes,
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult(originalContent));
             var output = new TagHelperOutput(originalTagName, originalAttributes)
             {
                 PreContent = originalPreContent,
@@ -266,7 +269,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Act & Assert (does not throw)
             // Tag helper would throw an NRE if it used ViewContext or Generator values.
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
         }
     }
 }

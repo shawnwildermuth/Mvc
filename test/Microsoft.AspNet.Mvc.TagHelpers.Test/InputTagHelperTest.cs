@@ -571,9 +571,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
             var expectedTagName = "input";
 
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(),
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(expectedTagName, expectedAttributes)
             {
                 PreContent = expectedPreContent,
@@ -593,7 +594,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             tagHelper.For = null;
 
             // Act
-            await tagHelper.ProcessAsync(context, output);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal(expectedAttributes, output.Attributes);
@@ -625,7 +626,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedMessage = "Unable to format without a 'asp-for' expression for <input>. 'asp-format' must " +
                 "be null if 'asp-for' is null.";
 
-            var context = new TagHelperContext(
+            var tagHelperContext = new TagHelperContext(
                 allAttributes: new Dictionary<string, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
@@ -637,7 +638,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => tagHelper.ProcessAsync(context, output));
+                () => tagHelper.ProcessAsync(tagHelperContext, output));
             Assert.Equal(expectedMessage, exception.Message);
         }
 

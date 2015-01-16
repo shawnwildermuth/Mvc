@@ -30,9 +30,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
-            var context = new TagHelperContext(allAttributes: new Dictionary<string, object>(),
-                                               uniqueId: "test",
-                                               getChildContentAsync: () => Task.FromResult("Something"));
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new Dictionary<string, object>(),
+                uniqueId: "test",
+                getChildContentAsync: () => Task.FromResult("Something"));
             var output = new TagHelperOutput(
                 expectedTagName,
                 attributes: new Dictionary<string, string>
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             validationSummaryTagHelper.Generator = htmlGenerator;
 
             // Act
-            await validationSummaryTagHelper.ProcessAsync(context, output);
+            await validationSummaryTagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
             Assert.Equal(2, output.Attributes.Count);
