@@ -69,12 +69,12 @@ namespace ActionResultsWebSite
 
         public IActionResult GetContentResultWithContentType()
         {
-            return Content("content", "text/plain");
+            return Content("content", "application/json");
         }
 
         public IActionResult GetContentResultWithContentTypeAndEncoding()
         {
-            return Content("content", "text/plain", Encoding.UTF8);
+            return Content("content", "application/json", Encoding.ASCII);
         }
 
         public DummyClass GetDummy(int id)

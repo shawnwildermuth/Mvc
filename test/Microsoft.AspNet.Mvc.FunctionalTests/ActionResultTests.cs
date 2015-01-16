@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ContentResult_WritesContent()
+        public async Task ContentResult_WritesContent_SetsDefaultContentTypeAndEncoding()
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -296,10 +296,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("content", await response.Content.ReadAsStringAsync());
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
         }
 
         [Fact]
-        public async Task ContentResult_WritesContent_SetsContentType()
+        public async Task ContentResult_WritesContent_SetsContentTypeWithDefaultEncoding()
         {
             // Arrange
             var server = TestServer.Create(_provider, _app);
@@ -313,8 +315,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
-            Assert.Null(response.Content.Headers.ContentType.CharSet);
+            Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
             Assert.Equal("content", await response.Content.ReadAsStringAsync());
         }
 
@@ -333,8 +335,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
-            Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
+            Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("us-ascii", response.Content.Headers.ContentType.CharSet);
             Assert.Equal("content", await response.Content.ReadAsStringAsync());
         }
     }

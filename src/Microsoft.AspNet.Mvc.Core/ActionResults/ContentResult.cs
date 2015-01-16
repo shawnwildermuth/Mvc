@@ -20,16 +20,22 @@ namespace Microsoft.AspNet.Mvc
         {
             var response = context.HttpContext.Response;
 
-            if (!string.IsNullOrEmpty(ContentType))
+            MediaTypeHeaderValue contentTypeHeader;
+            if (string.IsNullOrEmpty(ContentType))
             {
-                var contentTypeHeader = new MediaTypeHeaderValue(ContentType);
-                contentTypeHeader.Encoding = ContentEncoding;
-                response.ContentType = contentTypeHeader.ToString();
+                contentTypeHeader = new MediaTypeHeaderValue("text/plain");
             }
+            else
+            {
+                contentTypeHeader = new MediaTypeHeaderValue(ContentType);
+            }
+
+            contentTypeHeader.Encoding = ContentEncoding ?? Encodings.UTF8EncodingWithoutBOM;
+            response.ContentType = contentTypeHeader.ToString();
 
             if (Content != null)
             {
-                await response.WriteAsync(Content);
+                await response.WriteAsync(Content, contentTypeHeader.Encoding);
             }
         }
     }
