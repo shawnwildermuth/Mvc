@@ -44,13 +44,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     output.MergeAttributes(tagBuilder);
 
-                    var childContent = await context.GetChildContentAsync();
-
                     // We check for whitespace to detect scenarios such as:
                     // <label for="Name">
                     // </label>
                     if (string.IsNullOrEmpty(output.Content))
                     {
+                        var childContent = await context.GetChildContentAsync();
+
                         if (string.IsNullOrWhiteSpace(childContent))
                         {
                             // Provide default label text since there was nothing useful in the Razor source.

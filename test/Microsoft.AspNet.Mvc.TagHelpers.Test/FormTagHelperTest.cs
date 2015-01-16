@@ -304,10 +304,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                                                  { "aCTiON", "my-action" },
                                              });
             var context = new TagHelperContext(
-                allAttributes: new Dictionary<string, object>()
-                {
-                    { "aCTiON", "http://www.contoso.com" }
-                },
+                allAttributes: new Dictionary<string, object>(),
                 uniqueId: "test",
                 getChildContentAsync: () => Task.FromResult("Something"));
 
