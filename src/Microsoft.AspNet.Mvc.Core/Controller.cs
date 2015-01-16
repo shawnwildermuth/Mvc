@@ -109,6 +109,14 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets or sets <see cref="ViewDataDictionary"/> used by <see cref="ViewResult"/> and <see cref="ViewBag"/>.
+        /// </summary>
+        /// <remarks>
+        /// By default, this property is activated when <see cref="IControllerActivator"/> activates controllers.
+        /// However, when controllers are directly instantiated in user codes, this property is initialized with
+        /// <see cref="EmptyModelMetadataProvider"/>.
+        /// </remarks>
         [Activate]
         public ViewDataDictionary ViewData
         {
@@ -131,6 +139,7 @@ namespace Microsoft.AspNet.Mvc
                     throw
                         new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(ViewData));
                 }
+
                 _viewData = value;
             }
         }
